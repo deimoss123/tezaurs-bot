@@ -5,7 +5,6 @@ use serenity::model::prelude::interaction::Interaction;
 use std::env;
 
 use serenity::async_trait;
-use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
 use serenity::prelude::*;
 
@@ -15,8 +14,6 @@ struct Handler;
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
-            println!("saņemta komandas dsa {:#?}", command);
-
             match command.data.name.as_str() {
                 "tezaurs" => commands::tezaurs::run(&ctx, &command).await,
                 _ => (),

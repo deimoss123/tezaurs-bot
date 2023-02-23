@@ -1,3 +1,4 @@
+use reqwest;
 use serenity::{
     builder::CreateApplicationCommand,
     model::prelude::{
@@ -24,7 +25,21 @@ pub async fn run(ctx: &Context, interaction: &ApplicationCommandInteraction) {
             },
             None => "".to_string(),
         };
+
         let res_text = format!("{}Ievadītais vārds: **{}**", user_mention, text);
+        let url = format!("https://tezaurs.lv/api/searchEntry?w={}", text);
+        println!("URL: {}", url);
+        let res = reqwest::get(url).await;
+
+        match res {
+            Ok(res) => match res.text().await {
+                Ok(res) => {
+                    println!("{:#?}", res);
+                }
+                Err(e) => println!("{:#?}", e),
+            },
+            Err(e) => println!("{:#?}", e),
+        }
 
         // izaicinājums - uzraksti smuku kodu rūsā (neiespējami)
         if let Err(why) = interaction
