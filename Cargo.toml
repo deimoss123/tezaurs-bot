@@ -8,6 +8,7 @@ tokio = { version = "1.21.2", features = ["macros", "rt-multi-thread"] }
 dotenv = "0.15.0"
 reqwest = "0.11.14"
 scraper = "0.14.0"
+regex = "1.7.1"
 
 [dependencies.serenity]
 default-features = false
