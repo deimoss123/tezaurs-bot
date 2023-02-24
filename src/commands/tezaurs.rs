@@ -27,30 +27,23 @@ fn find_word(html_string: &str, search_query: &str) -> Option<(String, String)> 
     let fragment = Html::parse_fragment(&html_string);
 
     for (selector_str, return_str) in search_result_types {
-        let selector = Selector::parse(&selector_str).unwrap();
+        let selector = Selector::parse(&format!("{} a", selector_str)).unwrap();
 
+        // some some some
         if let Some(frag) = fragment.select(&selector).next() {
-            let a_selector = Selector::parse("a").unwrap();
-            let res = frag.select(&a_selector).next();
-            if let Some(frag1) = res {
-                if let Some(link) = frag1.value().attr("href") {
-                    return Some((
-                        link.to_string(),
-                        Regex::new("<>")
-                            .unwrap()
-                            .replace(return_str, format!("**{}**", search_query))
-                            .to_string(),
-                    ));
-                }
+            if let Some(link) = frag.value().attr("href") {
+                return Some((
+                    link.to_string(),
+                    Regex::new("<>")
+                        .unwrap()
+                        .replace(return_str, format!("**{}**", search_query))
+                        .to_string(),
+                ));
             }
-            println!("a selector");
-            println!("{:#?}", res);
         }
     }
 
     return None;
-
-    // println!("{:#?}", temp);
 }
 
 pub async fn run(ctx: &Context, interaction: &ApplicationCommandInteraction) {
@@ -85,7 +78,6 @@ pub async fn run(ctx: &Context, interaction: &ApplicationCommandInteraction) {
             None => format!("Vārds netika atrasts\n{}", url).to_string(),
         };
 
-        // izaicinājums - uzraksti smuku kodu rūsā (neiespējami)
         if let Err(why) = interaction
             .create_interaction_response(&ctx.http, |res| {
                 res.kind(InteractionResponseType::ChannelMessageWithSource)
@@ -93,7 +85,7 @@ pub async fn run(ctx: &Context, interaction: &ApplicationCommandInteraction) {
             })
             .await
         {
-            println!("Couldn't respond to /tezaurs: {}", why)
+            println!("Kļūme: {}", why)
         }
     }
 }
@@ -113,7 +105,6 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
             option
                 .name("lietotājs")
                 .description("Lietotājs ko vēlies pieminēt (pingot)")
-                .required(true)
                 .kind(CommandOptionType::User)
         });
 }
