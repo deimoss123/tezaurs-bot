@@ -14,11 +14,11 @@ struct Handler;
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
-            match command.data.name.as_str() {
+            let _ = match command.data.name.as_str() {
                 "tezaurs" => commands::tezaurs::run(&ctx, &command).await,
-                _ => (),
+                _ => Ok(()),
             };
-        }
+        };
     }
 
     async fn ready(&self, _: Context, ready: Ready) {
