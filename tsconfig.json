@@ -10,7 +10,11 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "exclude": [
-    "node_modules"
-  ]
+  "ts-node": {
+    "swc": true
+  },
+  "paths": {
+    "*": ["src/types/environment.d.ts"]
+  },
+  "exclude": ["node_modules"]
 }

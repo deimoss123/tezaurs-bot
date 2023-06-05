@@ -1,4 +1,8 @@
-.idea
 .env
 node_modules
 dist
+
+tezaurs_*.xml
+
+# tezaura zipā iekšā ir kaut kāds sojas mēsls, tāpēc jāignorē
+__MACOSX

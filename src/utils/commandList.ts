@@ -1,8 +1,6 @@
-import Command from '../interfaces/Command';
-import tezaurs from '../commands/tezaurs';
+import tezaurs from "../commands/tezaurs";
+import Command from "../types/Command";
 
-const commandList: Command[] = [
-  tezaurs,
-];
+const commandList: Command[] = [tezaurs];
 
 export default commandList;
