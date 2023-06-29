@@ -44,6 +44,7 @@ async function createTable(dbClient: pg.Client) {
   xmlStream.collect("gram");
   xmlStream.collect("sense");
   xmlStream.collect("gramGrp");
+  xmlStream.collect("bibl");
 
   xmlStream.on("endElement: entry", async (item: any) => {
     valueArr.push([item.$.id, item.$.sortKey, item.$.n, item]);

@@ -5,6 +5,7 @@ import {
 } from "discord.js";
 import commandHandler from "./utils/commandHandler";
 import "dotenv/config";
+
 import validateEnv from "./utils/validateEnv";
 import pg from "pg";
 
@@ -39,7 +40,7 @@ client.on("interactionCreate", async (i) => {
       SELECT word, id, n FROM words 
       WHERE word % $1
       ORDER BY word <-> $1 ASC, n ASC
-      LIMIT 10
+      LIMIT 25
     `;
 
     const now = performance.now();
@@ -54,16 +55,12 @@ client.on("interactionCreate", async (i) => {
       res.rows.filter(({ n }) => +n >= 2).map(({ word }) => word)
     );
 
-    console.log(hasMany);
-
     const response: ApplicationCommandOptionChoiceData[] = res.rows.map(
       (row) => ({
         name: `${row.word} ${hasMany.has(row.word) ? `(${row.n})` : ""}`,
         value: row.id,
       })
     );
-
-    console.log(res.rows.map((row) => row.word));
 
     i.respond(response).catch(() => {});
   }
