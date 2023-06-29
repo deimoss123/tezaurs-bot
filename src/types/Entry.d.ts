@@ -118,7 +118,7 @@ export interface $ {
   type: string;
 }
 export interface ListBibl {
-  bibl: Bibl;
+  bibl: Bibl[];
 }
 export interface Bibl {
   $: $6;

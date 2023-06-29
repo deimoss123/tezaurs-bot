@@ -4,9 +4,9 @@ import {
   EmbedBuilder,
 } from "discord.js";
 import Command from "../types/Command";
-import { dbClient } from "..";
 import { Entry, SenseEntity, SenseEntity1 } from "../types/Entry";
 import truncate from "../utils/truncate";
+import { dbClient } from "..";
 
 const sojasEmbed = {
   ephemeral: true,
@@ -70,23 +70,34 @@ const tezaurs: Command = {
   },
 };
 
+function getMainProperties(entry: Entry): string | null {
+  const gramGrp = entry.form.gramGrp;
+  if (!gramGrp) return null;
+
+  const gram = gramGrp[0].gramGrp?.[0].gram;
+  if (!gram) return null;
+
+  const txt = gram
+    .map((g) => `\u001b[1;34m${g.$.type}\u001b[0;0m: ${g.$text}\n`)
+    .join("");
+
+  return "```ansi\n" + txt + "```";
+}
+
 function getUse(sense: SenseEntity | SenseEntity1): string {
-  let str = "";
+  let properties: string[] = [];
+
   if (sense.gramGrp && sense.gramGrp[0]?.gramGrp) {
-    const gramGrp = sense.gramGrp[0].gramGrp;
+    let gramGrp = sense.gramGrp[0].gramGrp;
+    if (gramGrp[0].gramGrp) gramGrp = gramGrp[0].gramGrp;
+
     for (const gram of gramGrp) {
       if (!gram?.gram?.[0]) continue;
-
-      switch (gram.$.type) {
-        // prettier-ignore
-        case 'Dzimte': {
-          str += `${gram.gram[0].$text} dzimte`
-        } break;
-      }
+      properties = gram.gram.map((g) => g.$text);
     }
   }
 
-  return str;
+  return properties.join(", ");
 }
 
 // velnīgi daudz definīcijas:
@@ -98,9 +109,6 @@ function getDefinitions(definitions: SenseEntity[] | null | undefined) {
   const fields: APIEmbedField[] = [];
 
   for (const def of definitions) {
-    // console.log(`${def.$.n}. ${getUse(def)}`);
-    // console.log(def.def);
-
     fields.push({
       name: truncate(256, `${def.$.n}. ${getUse(def)}`),
       value: truncate(1024, def.def),
@@ -139,17 +147,14 @@ function getEmbed(
 
   embeds[0].setTitle(sortKey).setURL(url);
 
-  // TODO: avoti
-  // const sources = wordData.listBibl?.bibl;
+  const mainProperties = getMainProperties(wordData);
+  if (mainProperties) embeds[0].setDescription(mainProperties);
 
-  // if (firstEmbed.data.fields?.length) {
-  //   console.log("chau");
-  //   firstEmbed.setFields(firstEmbed.data.fields.slice(0, 23));
-  // } else {
-  //   firstEmbed.setDescription(
-  //     firstEmbed.data.description + "\n...nav definīciju?"
-  //   );
-  // }
+  const sources = wordData.listBibl?.bibl
+    .map((b) => b.$.corresp.slice(1))
+    .join(", ");
+
+  if (sources) embeds.at(-1)!.setFooter({ text: `Avoti: ${sources}` });
 
   return embeds;
 }
