@@ -7,7 +7,6 @@ import { dbClient } from "..";
 export default async function autocompleteHandler(i: AutocompleteInteraction) {
   const value = i.options.getFocused();
   if (!value) return;
-  console.log(value);
   // SELECT * FROM words WHERE levenshtein(word, 'āda') < 2 ORDER BY levenshtein(word, 'āda') ASC
   // const queryStr = `
   //   SELECT id, word FROM words
@@ -25,7 +24,9 @@ export default async function autocompleteHandler(i: AutocompleteInteraction) {
 
   const now = performance.now();
   const res = await dbClient.query(queryStr2, [value]);
-  console.log(`Time: ${Math.floor((performance.now() - now) * 10) / 10_000}s`);
+  console.log(
+    `${value} | Time: ${Math.floor((performance.now() - now) * 10) / 10_000}s`
+  );
 
   if (!res.rows.length) return;
 

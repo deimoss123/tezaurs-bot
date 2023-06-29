@@ -7,6 +7,7 @@ import Command from "../types/Command";
 import { Entry, SenseEntity, SenseEntity1 } from "../types/Entry";
 import truncate from "../utils/truncate";
 import { dbClient } from "..";
+import intReply from "../utils/intReply";
 
 const sojasEmbed = {
   ephemeral: true,
@@ -39,7 +40,7 @@ const tezaurs: Command = {
     const userToPing = i.options.getUser("lietotājs");
 
     if (!wordToFind) {
-      return i.reply("???");
+      return intReply(i, "???");
     }
 
     const queryStr = `
@@ -48,12 +49,12 @@ const tezaurs: Command = {
       LIMIT 1
     `;
     const data = await dbClient.query(queryStr, [wordToFind]).catch(() => {
-      i.reply(sojasEmbed);
+      intReply(i, sojasEmbed);
     });
     if (!data) return;
 
     if (!data.rows?.length) {
-      return i.reply(sojasEmbed);
+      return intReply(i, sojasEmbed);
     }
 
     const wordData = data.rows[0].data as Entry;
@@ -63,7 +64,7 @@ const tezaurs: Command = {
       type === "mwe" ? id.split("/")[1] : `${encodeURIComponent(sortKey)}:${n}`;
     const url = `https://tezaurs.lv/${urlPath}`;
 
-    return i.reply({
+    return intReply(i, {
       embeds: getEmbed(sortKey, url, wordData),
       content: userToPing ? `${userToPing}` : undefined,
     });
