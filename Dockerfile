@@ -1,8 +1,5 @@
-ARG BOT_TOKEN
-ARG DB_URL
-ARG TEST_GUILD_ID
-
-FROM node
+FROM node:18-alpine
+RUN apk --no-cache add --virtual .builds-deps build-base python3 bash
 
 WORKDIR /usr/app
 
@@ -13,7 +10,3 @@ RUN npm ci
 COPY . .
 
 RUN npm run build
-
-# EXPOSE 443/tcp
-
-CMD [ "node", "dist/index.js" ]
