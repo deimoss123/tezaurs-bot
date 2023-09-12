@@ -16,11 +16,11 @@ export default async function autocompleteHandler(i: AutocompleteInteraction) {
   // `;
 
   const queryStr2 = `
-      SELECT word, id, n FROM words 
-      WHERE word % $1
-      ORDER BY word <-> $1 ASC, n ASC
-      LIMIT 25
-    `;
+    SELECT word, id, n FROM words 
+    WHERE word % $1
+    ORDER BY word <-> $1 ASC, n ASC
+    LIMIT 25
+  `;
 
   const now = performance.now();
   const res = await dbClient.query(queryStr2, [value]);

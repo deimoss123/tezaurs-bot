@@ -47,17 +47,17 @@ async function createTable(dbClient: pg.Client) {
   xmlStream.collect("bibl");
 
   xmlStream.on("endElement: entry", async (item: any) => {
-    valueArr.push([item.$.id, item.$.sortKey, item.$.n, item]);
+    // valueArr.push([item.$.id, item.$.sortKey, item.$.n, item]);
+    valueArr[valueArr.length] = [item.$.id, item.$.sortKey, item.$.n, item];
 
     if (valueArr.length >= 1000) {
       xmlStream.pause();
-      dbClient.query(format(insertText, valueArr)).then(() => {
-        console.log(
-          `[i=${i}] Added ${valueArr.length} items to DB (${item.$.sortKey})`
-        );
-        valueArr = [];
-        xmlStream.resume();
-      });
+      await dbClient.query(format(insertText, valueArr));
+      console.log(
+        `[i=${i}] Added ${valueArr.length} items to DB (${item.$.sortKey})`
+      );
+      valueArr = [];
+      xmlStream.resume();
     }
 
     i++;

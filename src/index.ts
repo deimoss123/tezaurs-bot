@@ -1,7 +1,5 @@
 import { Client, GatewayIntentBits } from "discord.js";
 import commandHandler from "./utils/commandHandler";
-import "dotenv/config";
-
 import validateEnv from "./utils/validateEnv";
 import pg from "pg";
 import autocompleteHandler from "./utils/autocompleteHandler";

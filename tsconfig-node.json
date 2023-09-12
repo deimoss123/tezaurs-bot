@@ -1,18 +1,13 @@
 {
   "compilerOptions": {
+    "target": "ESNext",
+    "module": "commonjs",
     "rootDir": "./src",
     "outDir": "./dist",
-    "types": ["bun-types"],
-    "lib": ["esnext"],
-    "module": "esnext",
-    "target": "esnext",
-    "moduleResolution": "bundler",
-    "noEmit": true,
-    "allowImportingTsExtensions": true,
-    "moduleDetection": "force",
+    "noEmitOnError": true,
     "esModuleInterop": true,
-    "strict": true,
     "forceConsistentCasingInFileNames": true,
+    "strict": true,
     "skipLibCheck": true
   },
   "paths": {

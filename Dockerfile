@@ -1,12 +1,11 @@
-FROM node:18-alpine
-RUN apk --no-cache add --virtual .builds-deps build-base python3 bash
+FROM oven/bun
+# RUN apk --no-cache add --virtual .builds-deps build-base python3 
 
 WORKDIR /usr/app
 
-COPY package*.json ./
+COPY package.json ./
+COPY bun.lockb ./
 
-RUN npm ci
+RUN bun install
 
 COPY . .
-
-RUN npm run build

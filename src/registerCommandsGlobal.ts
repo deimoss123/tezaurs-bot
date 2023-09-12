@@ -1,6 +1,5 @@
 import { Client, GatewayIntentBits } from "discord.js";
 import commandList from "./utils/commandList";
-import "dotenv/config";
 import validateEnv from "./utils/validateEnv";
 
 validateEnv();
