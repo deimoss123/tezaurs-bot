@@ -33,21 +33,21 @@ git clone https://github.com/deimoss123/tezaurs-bot
 cd tezaurs-bot
 ```
 
-### 3.2 Atzippo `tezaurs_2022_tei-xml.zip` failu
+### 3.2 Atzippo `tezaurs_2023_3_tei-xml_rc1.zip` failu
 
 **Linux**
 
 ```sh
-unzip tezaurs_2022_tei-xml.zip
+unzip tezaurs_2023_3_tei-xml_rc1.zip
 ```
 
 **Windows (PowerShell)**
 
 ```sh
-Expand-Archive ./tezaurs_2022_tei-xml.zip ./
+Expand-Archive ./tezaurs_2023_3_tei-xml_rc1.zip ./
 ```
 
-Ja izmanto citu atzippošanas veidu, tad `tezaurs_2022_tei.xml` failam pēc atzippošanas ir jāatrodas projekta saknē, nevis iekšā citā mapē
+Ja izmanto citu atzippošanas veidu, tad `tezaurs_2023_3_tei.xml` failam pēc atzippošanas ir jāatrodas projekta saknē, nevis iekšā citā mapē
 
 ### 3.3 `.env` fails
 

@@ -1,13 +1,13 @@
-import pg from "pg";
-import format from "pg-format";
-import fs from "node:fs";
-import path from "node:path";
-import validateEnv from "./utils/validateEnv";
-import "dotenv/config";
+import pg from 'pg';
+import format from 'pg-format';
+import fs from 'node:fs';
+import path from 'node:path';
+import validateEnv from './utils/validateEnv';
+import 'dotenv/config';
 
 // @ts-ignore
-import XmlStream from "xml-stream";
-import chalk from "chalk";
+import XmlStream from 'xml-stream';
+import chalk from 'chalk';
 
 async function createTable(dbClient: pg.Client) {
   const createTableText = `
@@ -27,26 +27,26 @@ async function createTable(dbClient: pg.Client) {
 
   await dbClient
     .query(createTableText)
-    .then(() => console.log("Created table"));
+    .then(() => console.log('Created table'));
 
-  const FILE_NAME = "tezaurs_2022_tei.xml";
+  const FILE_NAME = 'tezaurs_2023_3_tei.xml';
   const FILE_PATH = path.join(process.cwd(), FILE_NAME);
 
   const xml = fs.createReadStream(FILE_PATH);
   const xmlStream = new XmlStream(xml);
 
   const insertText =
-    "INSERT INTO words(id, word, n, data) VALUES %L RETURNING *";
+    'INSERT INTO words(id, word, n, data) VALUES %L RETURNING *';
 
   let i = 0;
   let valueArr: any[] = [];
 
-  xmlStream.collect("gram");
-  xmlStream.collect("sense");
-  xmlStream.collect("gramGrp");
-  xmlStream.collect("bibl");
+  xmlStream.collect('gram');
+  xmlStream.collect('sense');
+  xmlStream.collect('gramGrp');
+  xmlStream.collect('bibl');
 
-  xmlStream.on("endElement: entry", async (item: any) => {
+  xmlStream.on('endElement: entry', async (item: any) => {
     // valueArr.push([item.$.id, item.$.sortKey, item.$.n, item]);
     valueArr[valueArr.length] = [item.$.id, item.$.sortKey, item.$.n, item];
 
@@ -63,11 +63,11 @@ async function createTable(dbClient: pg.Client) {
     i++;
   });
 
-  xmlStream.on("end", () => {
+  xmlStream.on('end', () => {
     if (valueArr.length) {
       dbClient.query(format(insertText, valueArr)).then(() => {
         console.log(`[i=${i}] Added ${valueArr.length} items to DB`);
-        console.log(chalk.green("Done!"));
+        console.log(chalk.green('Done!'));
         process.exit(0);
       });
     }
@@ -78,6 +78,6 @@ validateEnv();
 
 const dbClient = new pg.Client({ connectionString: process.env.DB_URL });
 dbClient.connect().then(() => {
-  console.log("Connected to DB");
+  console.log('Connected to DB');
   createTable(dbClient);
 });
