@@ -24,6 +24,14 @@ Pirms sāc, pārliecinies, ka tev ir ieinstalēts Node.js, bez tā nekas nestrā
 - Iegūsti DB savienošanās URL, **kas būs nepieciešams vēlāk**
 - Datubāze tiks izmantota lai glabātu tēzaura datus, kas tiks pārveidoti no xml faila
 
+Datubāze ir palaižama lokāli caur Docker ar komandu
+
+```sh
+docker-compose up -d postgres
+```
+
+Pēc noklusējuma datubāzes url būs `postgres://tezaursbot@127.0.0.1:5432/tezaurs`
+
 ## 3. Koda daļa
 
 ### 3.1 Noklonē Github repo
@@ -51,36 +59,20 @@ Ja izmanto citu atzippošanas veidu, tad `tezaurs_2023_4_tei.xml` failam pēc at
 
 ### 3.3 `.env` fails
 
-Projekta **saknē** izveido failu ar nosaukumu `.env`
+Projekta **saknē** izveido failu ar nosaukumu `.env`, izmantojot [.env.example](./.env.example) kā piemēru.
 
-Failā jāatrodas 3 mainīgajiem:
-
-```sh
-# tava bota tokens
-BOT_TOKEN=""
-# postgresql datubāzes savienošanās url
-DB_URL=""
-# testēšanas servera ID
-TEST_GUILD_ID=""
-```
-
-Piemērs `.env` failam:
+### 3.4 Ieinstalēt projekta nepieciešamās paciņas
 
 ```sh
-BOT_TOKEN="MTExNTAwNjc1NzIzMjcyNjAyNw.GurI6k.XR9s7NMg1kdHkADJigxXFNxrgURxpyMfcgowG0"
-DB_URL="postgresql://stiligsNosaukums:DrosaParole123@stiligs.db.url:6969"
-TEST_GUILD_ID="797584379685240882"
+bun install
+npm rebuild
 ```
 
-### 3.4 Ieinstalēt projekta nepieciešamās pakotnes/bibliotēkas
-
-```sh
-npm ci
-```
+`npm rebuild` ir jālaiž, jo bun nespēj pareizi ieinstalēt to nolādēto XML paciņu
 
 ### 3.5 Izveidot datubāzes tabulu
 
-Palaid sekojošo komandu lai xml failu ierakstītu jaunā PostgreSQL tabulā.
+Palaid sekojošo komandu lai xml failu ierakstītu jaunā PostgreSQL tabulā. (jālaiž ar npm, viss pārējais ar bun)
 
 ```sh
 npm run create-table
@@ -90,16 +82,16 @@ npm run create-table
 
 ### 3.6 Reģistrē Discord bota komandas
 
-Reģistrēt komandas globāli:
-
-```sh
-npm run register-global
-```
-
 Reģistrēt tikai 1 serverī (TEST_GUILD_ID):
 
 ```sh
-npm run register
+bun register
+```
+
+Reģistrēt komandas globāli:
+
+```sh
+bun register-global
 ```
 
 ### 3.7 Pēdējais solis: palaist botu
@@ -107,12 +99,11 @@ npm run register
 Palaist botu produkcijas režīmā:
 
 ```sh
-npm run build
-npm start
+bun start
 ```
 
 Palaist botu "dev" režīmā (restartēsies pēc failu izmaiņām):
 
 ```sh
-npm run dev
+bun dev
 ```
