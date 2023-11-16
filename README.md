@@ -2,7 +2,7 @@
 
 Visi dati pieder [Tēzauram](https://tezaurs.lv/).
 
-Projekts izmanto tēzaura [atvērtos datus](https://repository.clarin.lv/repository/xmlui/handle/20.500.12574/66).
+Projekts izmanto tēzaura [atvērtos datus](https://repository.clarin.lv/repository/xmlui/handle/20.500.12574/92).
 
 # Kā palaist botu?
 
@@ -33,21 +33,21 @@ git clone https://github.com/deimoss123/tezaurs-bot
 cd tezaurs-bot
 ```
 
-### 3.2 Atzippo `tezaurs_2023_3_tei-xml_rc1.zip` failu
+### 3.2 Atzippo `tezaurs_2023_4_tei.zip` failu
 
 **Linux**
 
 ```sh
-unzip tezaurs_2023_3_tei-xml_rc1.zip
+unzip tezaurs_2023_4_tei.zip
 ```
 
 **Windows (PowerShell)**
 
 ```sh
-Expand-Archive ./tezaurs_2023_3_tei-xml_rc1.zip ./
+Expand-Archive ./tezaurs_2023_4_tei.zip ./
 ```
 
-Ja izmanto citu atzippošanas veidu, tad `tezaurs_2023_3_tei.xml` failam pēc atzippošanas ir jāatrodas projekta saknē, nevis iekšā citā mapē
+Ja izmanto citu atzippošanas veidu, tad `tezaurs_2023_4_tei.xml` failam pēc atzippošanas ir jāatrodas projekta saknē, nevis iekšā citā mapē
 
 ### 3.3 `.env` fails
 
@@ -86,7 +86,7 @@ Palaid sekojošo komandu lai xml failu ierakstītu jaunā PostgreSQL tabulā.
 npm run create-table
 ```
 
-Šis var aizņemt pāris minūtes, kopā ir ~388k ieraksti.
+Šis var aizņemt pāris minūtes, kopā ir 397k ieraksti.
 
 ### 3.6 Reģistrē Discord bota komandas
 

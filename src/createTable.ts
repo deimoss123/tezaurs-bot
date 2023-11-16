@@ -29,7 +29,7 @@ async function createTable(dbClient: pg.Client) {
     .query(createTableText)
     .then(() => console.log('Created table'));
 
-  const FILE_NAME = 'tezaurs_2023_3_tei.xml';
+  const FILE_NAME = 'tezaurs_2023_4_tei.xml';
   const FILE_PATH = path.join(process.cwd(), FILE_NAME);
 
   const xml = fs.createReadStream(FILE_PATH);
