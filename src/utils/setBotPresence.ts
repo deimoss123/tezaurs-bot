@@ -4,7 +4,7 @@ export default function setBotPresence(client: Client<true>) {
   const guildCount = client.guilds.cache.size;
 
   client.user.setPresence({
-    status: PresenceUpdateStatus.DoNotDisturb,
+    status: PresenceUpdateStatus.Online,
     activities: [
       {
         state: `/tezaurs | ${guildCount} serveros`,
