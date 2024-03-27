@@ -6,7 +6,7 @@ Projekts izmanto tēzaura [atvērtos datus](https://repository.clarin.lv/reposit
 
 # Kā palaist botu?
 
-Pirms sāc, pārliecinies, ka tev ir ieinstalēts Node.js, bez tā nekas nestrādās.
+Pirms sāc, pārliecinies, ka tev ir ieinstalēts [Bun](https://bun.sh/), bez tā nekas nestrādās.
 
 ## 1. Izveido jaunu discord botu
 
@@ -20,7 +20,7 @@ Pirms sāc, pārliecinies, ka tev ir ieinstalēts Node.js, bez tā nekas nestrā
 
 ## 2. Izveido PostgreSQL datubāzi
 
-- Šo var izdarīt vai nu lokāli, vai arī mākonī (iesaku [railway.app](https://railway.app/))
+- Šo var izdarīt vai nu lokāli, vai arī mākonī
 - Iegūsti DB savienošanās URL, **kas būs nepieciešams vēlāk**
 - Datubāze tiks izmantota lai glabātu tēzaura datus, kas tiks pārveidoti no xml faila
 
@@ -43,7 +43,7 @@ cd tezaurs-bot
 
 ### 3.2 Atzippo `tezaurs_2023_4_tei.zip` failu
 
-**Linux**
+**Linux, macOS**
 
 ```sh
 unzip tezaurs_2023_4_tei.zip
