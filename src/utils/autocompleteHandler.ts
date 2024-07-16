@@ -3,43 +3,70 @@ import {
   AutocompleteInteraction,
 } from "discord.js";
 import { dbClient } from "..";
+import { QueryResult } from "pg";
+
+type QueryRes = {
+  sort_key: string;
+  id: string;
+  n: string;
+};
+
+function getRows(value: string) {
+  if (!value) {
+    const queryStr = `
+      SELECT sort_key, id, n 
+      FROM entries 
+      LIMIT 25
+    `;
+
+    return dbClient.query(queryStr);
+  } else {
+    const queryStr = `
+      SELECT sort_key, id, n
+      FROM entries 
+      WHERE sort_key % $1
+      ORDER BY sort_key <-> $1 ASC, n ASC
+      LIMIT 25
+    `;
+
+    return dbClient.query(queryStr, [value]);
+  }
+}
+
+const LOGGING = false;
 
 export default async function autocompleteHandler(i: AutocompleteInteraction) {
   const value = i.options.getFocused();
-  if (!value) return;
-  // SELECT * FROM words WHERE levenshtein(word, 'āda') < 2 ORDER BY levenshtein(word, 'āda') ASC
-  // const queryStr = `
-  //   SELECT id, word FROM words
-  //   WHERE levenshtein(left(word, 255), $1) < 1.2
-  //   ORDER BY levenshtein(left(word, 255), $1) ASC
-  //   LIMIT 10
-  // `;
-
-  const queryStr2 = `
-    SELECT word, id, n FROM words 
-    WHERE word % $1
-    ORDER BY word <-> $1 ASC, n ASC
-    LIMIT 25
-  `;
 
   const now = performance.now();
-  const res = await dbClient.query(queryStr2, [value]);
-  console.log(
-    `${value} | Time: ${Math.floor((performance.now() - now) * 10) / 10_000}s`
-  );
+
+  let res: QueryResult<any>;
+
+  try {
+    res = await getRows(value);
+  } catch (e) {
+    console.error(e);
+    return;
+  }
 
   if (!res.rows.length) return;
 
+  const rows = res.rows as QueryRes[];
+
   const hasMany = new Set<string>(
-    res.rows.filter(({ n }) => +n >= 2).map(({ word }) => word)
+    rows.filter(({ n }) => +n >= 2).map(({ sort_key }) => sort_key),
   );
 
-  const response: ApplicationCommandOptionChoiceData[] = res.rows.map(
-    (row) => ({
-      name: `${row.word} ${hasMany.has(row.word) ? `(${row.n})` : ""}`,
-      value: row.id,
-    })
-  );
+  const response: ApplicationCommandOptionChoiceData[] = rows.map((row) => ({
+    name: `${row.sort_key} ${hasMany.has(row.sort_key) ? `(${row.n})` : ""}`,
+    value: row.id,
+  }));
 
-  i.respond(response).catch(() => {});
+  await i.respond(response).catch(() => {});
+
+  if (LOGGING) {
+    console.log(
+      `${value} | Time: ${Math.floor((performance.now() - now) * 10) / 10_000}s`,
+    );
+  }
 }
