@@ -33,6 +33,9 @@ const tezaurs: Command = {
         type: ApplicationCommandOptionType.User,
       },
     ],
+    // @ts-ignore
+    contexts: [0, 1, 2],
+    integration_types: [0, 1],
   },
   async run(i) {
     // SELECT * FROM words WHERE levenshtein(word, 'āda') < 2 ORDER BY levenshtein(word, 'āda') ASC
