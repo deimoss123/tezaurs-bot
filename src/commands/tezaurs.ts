@@ -12,6 +12,7 @@ type Entry = {
   n: number;
   type: string;
   sort_key: string;
+  has_multiple_entries: boolean;
   gramgrp: GramGrp[] | null;
 };
 
@@ -122,7 +123,7 @@ function getEmbed(entry: Entry, senses: Sense[]): APIEmbed {
     });
 
   return {
-    title: `${entry.sort_key} (${entry.n})`,
+    title: `${entry.sort_key} ${entry.has_multiple_entries ? `(${entry.n})` : ""}`,
     description,
     url:
       "https://tezaurs.lv/" +

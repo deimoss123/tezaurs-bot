@@ -9,12 +9,13 @@ type QueryRes = {
   sort_key: string;
   id: string;
   n: string;
+  has_multiple_entries: boolean;
 };
 
 function getRows(value: string) {
   if (!value) {
     const queryStr = `
-      SELECT sort_key, id, n 
+      SELECT sort_key, id, n, has_multiple_entries
       FROM entries 
       LIMIT 25
     `;
@@ -22,7 +23,7 @@ function getRows(value: string) {
     return dbClient.query(queryStr);
   } else {
     const queryStr = `
-      SELECT sort_key, id, n
+      SELECT sort_key, id, n, has_multiple_entries
       FROM entries 
       WHERE sort_key % $1
       ORDER BY sort_key <-> $1 ASC, n ASC
@@ -53,12 +54,8 @@ export default async function autocompleteHandler(i: AutocompleteInteraction) {
 
   const rows = res.rows as QueryRes[];
 
-  const hasMany = new Set<string>(
-    rows.filter(({ n }) => +n >= 2).map(({ sort_key }) => sort_key),
-  );
-
   const response: ApplicationCommandOptionChoiceData[] = rows.map((row) => ({
-    name: `${row.sort_key} ${hasMany.has(row.sort_key) ? `(${row.n})` : ""}`,
+    name: `${row.sort_key} ${row.has_multiple_entries ? `(${row.n})` : ""}`,
     value: row.id,
   }));
 
