@@ -50,7 +50,10 @@ export default async function autocompleteHandler(i: AutocompleteInteraction) {
     return;
   }
 
-  if (!res.rows.length) return;
+  if (!res.rows.length) {
+    await i.respond([{ name: "Nekas netika atrasts :(", value: "__________" }]).catch(() => {});
+    return;
+  }
 
   const rows = res.rows as QueryRes[];
 

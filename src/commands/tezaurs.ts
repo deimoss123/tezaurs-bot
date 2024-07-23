@@ -162,7 +162,15 @@ const tezaurs: Command = {
     const userToPing = i.options.getUser("lietotājs");
 
     if (!entryId) {
-      return intReply(i, "???");
+      return intReply(i, { content: "???", ephemeral: true });
+    }
+
+    if (entryId === "__________") {
+      return intReply(i, {
+        content:
+          "Nekas netika atrasts, pamēģini meklēt vārdu latviešu valodā :/",
+        ephemeral: true,
+      });
     }
 
     let resSenses, resEntry;
