@@ -14,11 +14,11 @@ async function registerCommandsGuild(client: Client<true>) {
       .put(Routes.applicationCommands(client.user.id), {
         body: commands,
       })
-      .then(() => console.log("User commands registered"));
-
-    await client
-      .application!.commands.set(commandList.map((cmd) => cmd.data))
       .then(() => console.log("Global commands registered"));
+
+    // await client
+    //   .application!.commands.set(commandList.map((cmd) => cmd.data))
+    //   .then(() => console.log("Global commands registered"));
 
   } catch (error) {
     console.error(error);
