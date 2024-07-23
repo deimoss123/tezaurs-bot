@@ -10,21 +10,21 @@ async function registerCommandsGuild(client: Client<true>) {
   const commands = commandList.map((cmd) => cmd.data);
 
   try {
-    await rest.put(Routes.applicationCommands(client.user.id), {
-      body: commands,
-    });
+    await rest
+      .put(Routes.applicationCommands(client.user.id), {
+        body: commands,
+      })
+      .then(() => console.log("User commands registered"));
 
-    console.log("Global commands registered");
+    await client
+      .application!.commands.set(commandList.map((cmd) => cmd.data))
+      .then(() => console.log("Global commands registered"));
+
   } catch (error) {
     console.error(error);
   }
 
-  // await client
-  //   .application!.commands.set(commandList.map((cmd) => cmd.data))
-  //   .then(() => {
-  //     console.log("Global commands registered");
-  //     process.exit(0);
-  //   });
+  process.exit(0);
 }
 
 const bot = new Client({ intents: [GatewayIntentBits.Guilds] });

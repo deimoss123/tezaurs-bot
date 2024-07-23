@@ -1,18 +1,137 @@
 import {
-  APIEmbedField,
+  APIEmbed,
   ApplicationCommandOptionType,
-  EmbedBuilder,
+  resolveColor,
 } from "discord.js";
 import Command from "../types/Command";
-import { Entry, SenseEntity, SenseEntity1 } from "../types/Entry";
-import truncate from "../utils/truncate";
 import { dbClient } from "..";
 import intReply from "../utils/intReply";
 
-const sojasEmbed = {
-  ephemeral: true,
-  content: "Kaut kas laikam nogāja greizi",
+type Entry = {
+  id: string;
+  n: number;
+  type: string;
+  sort_key: string;
+  gramgrp: GramGrp[] | null;
 };
+
+type Sense = {
+  id: string;
+  n: number;
+  def: string;
+  parent_id: string | null;
+  entry_id: string;
+};
+
+type Gram = {
+  type: string;
+  $: string;
+};
+
+type GramGrp = {
+  $: GramGrp[] | null;
+  type: string;
+  subtype: string;
+  gram: Gram[] | null;
+};
+
+function getEntry(id: string) {
+  const queryStr = `
+    SELECT * FROM entries
+    WHERE id = $1;
+  `;
+
+  return dbClient.query(queryStr, [id]);
+}
+
+function getSenses(id: string) {
+  const queryStr = `
+    WITH RECURSIVE senses2 AS (
+        SELECT id, n, def, parent_id, entry_id
+        FROM senses
+        WHERE entry_id = $1
+        UNION
+        SELECT s.id, s.n, s.def, s.parent_id, s.entry_id
+        FROM senses s
+        INNER JOIN senses2 s2 ON s.parent_id = s2.id
+    )
+    SELECT * FROM senses2;
+  `;
+
+  return dbClient.query(queryStr, [id]);
+}
+
+const gramGrpTypes: Record<string, (value: string, fullStr: string) => string> =
+  {
+    Dzimte: (v) => ` ${v.toLowerCase()} dzimtes`,
+    Deklinācija: (v) => ` ${v}. deklinācijas`,
+    Konjugācija: (v) => ` ${v}. konjugācijas`,
+    Vārdšķira: (v) => ` ${v.toLowerCase()}`,
+    Lietojums: (v, fullStr) => `${fullStr ? ";" : ""} ${v.toLowerCase()}`,
+    Joma: (v, fullStr) => `${fullStr ? ";" : ""} joma: ${v.toLowerCase()}`,
+  };
+
+function entryGramGrpStr(gramGrp: GramGrp) {
+  const grams = gramGrp.gram!;
+  const keys = Object.keys(gramGrpTypes);
+
+  let str = "";
+
+  grams
+    .filter((g) => keys.includes(g.type))
+    .toSorted((g1, g2) => keys.indexOf(g1.type) - keys.indexOf(g2.type))
+    .forEach((g) => {
+      str += gramGrpTypes[g.type](g.$, str);
+    });
+
+  return str.trim();
+}
+
+function getEmbed(entry: Entry, senses: Sense[]): APIEmbed {
+  let description = "";
+
+  if (entry.gramgrp && entry.gramgrp.length) {
+    const gramgrp2 = entry.gramgrp[0].$;
+
+    if (gramgrp2 && gramgrp2.length && gramgrp2[0].gram) {
+      description += `-# ${entryGramGrpStr(gramgrp2[0])}\n-# \u2800\n`;
+      // description += `\`${entryGramGrpStr(gramgrp2[0])}\`\n`;
+    }
+  }
+
+  senses
+    .filter((s) => s.parent_id === null)
+    .toSorted((s1, s2) => s1.n - s2.n)
+    .forEach((parentSense, index, arr) => {
+      if (senses.length > 1) {
+        description += `**${parentSense.n}.** `;
+      }
+
+      description += `${parentSense.def}\n`;
+
+      senses
+        .filter((s) => s.parent_id === parentSense.id)
+        .toSorted((s1, s2) => s1.n - s2.n)
+        .forEach((childSense) => {
+          description += `- **${parentSense.n}.${childSense.n}.** ${childSense.def}\n`;
+        });
+
+      if (index !== arr.length - 1) {
+        description += "-# \u2800\n";
+      }
+    });
+
+  return {
+    title: `${entry.sort_key} (${entry.n})`,
+    description,
+    url:
+      "https://tezaurs.lv/" +
+      encodeURIComponent(
+        `${entry.sort_key}${entry.n === 1 ? "" : `:${entry.n}`}`,
+      ),
+    color: resolveColor("#0c86b6"),
+  };
+}
 
 const tezaurs: Command = {
   data: {
@@ -38,129 +157,41 @@ const tezaurs: Command = {
     integration_types: [0, 1],
   },
   async run(i) {
-    // SELECT * FROM words WHERE levenshtein(word, 'āda') < 2 ORDER BY levenshtein(word, 'āda') ASC
-    const wordToFind = i.options.getString("vārds")!;
+    const entryId = i.options.getString("vārds")!;
     const userToPing = i.options.getUser("lietotājs");
 
-    if (!wordToFind) {
+    if (!entryId) {
       return intReply(i, "???");
     }
 
-    const queryStr = `
-      SELECT * FROM words
-      WHERE id = $1
-      LIMIT 1
-    `;
-    const data = await dbClient.query(queryStr, [wordToFind]).catch(() => {
-      intReply(i, sojasEmbed);
-    });
-    if (!data) return;
+    let resSenses, resEntry;
 
-    if (!data.rows?.length) {
-      return intReply(i, sojasEmbed);
+    try {
+      [resSenses, resEntry] = await Promise.all([
+        getSenses(entryId),
+        getEntry(entryId),
+      ]);
+    } catch (e) {
+      return intReply(i, {
+        content: "Kaut kas nogāja greizi",
+        ephemeral: true,
+      });
     }
 
-    const wordData = data.rows[0].data as Entry;
-    const { sortKey, n, type, id } = wordData.$;
+    if (!resEntry.rowCount || !resSenses.rowCount) {
+      return intReply(i, {
+        content: `Vārds "${entryId}" netika atrasts\n**Izvēlies vārdu no saraksta!**`,
+        ephemeral: true,
+      });
+    }
 
-    const urlPath =
-      type === "mwe" ? id.split("/")[1] : `${encodeURIComponent(sortKey)}:${n}`;
-    const url = `https://tezaurs.lv/${urlPath}`;
+    const entry = resEntry.rows[0] as Entry;
+    const senses = resSenses.rows as Sense[];
 
-    return intReply(i, {
-      embeds: getEmbed(sortKey, url, wordData),
-      content: userToPing ? `${userToPing}` : undefined,
-    });
+    const embed = getEmbed(entry, senses);
+
+    return intReply(i, { content: `${userToPing || ""}`, embeds: [embed] });
   },
 };
-
-function getMainProperties(entry: Entry): string | null {
-  const gramGrp = entry.form.gramGrp;
-  if (!gramGrp) return null;
-
-  const gram = gramGrp[0].gramGrp?.[0].gram;
-  if (!gram) return null;
-
-  const txt = gram
-    .map((g) => `\u001b[1;34m${g.$.type}\u001b[0;0m: ${g.$text}\n`)
-    .join("");
-
-  return "```ansi\n" + txt + "```";
-}
-
-function getUse(sense: SenseEntity | SenseEntity1): string {
-  let properties: string[] = [];
-
-  if (sense.gramGrp && sense.gramGrp[0]?.gramGrp) {
-    let gramGrp = sense.gramGrp[0].gramGrp;
-    if (gramGrp[0].gramGrp) gramGrp = gramGrp[0].gramGrp;
-
-    for (const gram of gramGrp) {
-      if (!gram?.gram?.[0]) continue;
-      properties = gram.gram.map((g) => g.$text);
-    }
-  }
-
-  return properties.join(", ");
-}
-
-// velnīgi daudz definīcijas:
-// Melnezers, Neuhof, mest
-
-function getDefinitions(definitions: SenseEntity[] | null | undefined) {
-  if (!definitions) return [];
-
-  const fields: APIEmbedField[] = [];
-
-  for (const def of definitions) {
-    fields.push({
-      name: truncate(256, `${def.$.n}. ${getUse(def)}`),
-      value: truncate(1024, def.def),
-    });
-
-    // pievieno papildus definīcijas, bet aizkomentēts jo baigais spams
-    // if (def.sense) {
-    //   for (const def1 of def.sense) {
-    //     // console.log(`${def.$.n}.${def1.$.n}. ${getUse(def1)}`);
-    //     // console.log(def1.def);
-
-    //     fields.push({
-    //       name: `${def.$.n}.${def1.$.n}. ${getUse(def1)}`,
-    //       value: def1.def || "-",
-    //     });
-    //   }
-    // }
-  }
-
-  return fields;
-}
-
-function getEmbed(
-  sortKey: string,
-  url: string,
-  wordData: Entry
-): EmbedBuilder[] {
-  const fields = getDefinitions(wordData.sense);
-
-  const embedCount = Math.ceil(fields.length / 25);
-  const embeds = Array.from({ length: embedCount }, (_, i) =>
-    new EmbedBuilder()
-      .setFields(fields.slice(i * 25, (i + 1) * 25))
-      .setColor("#0c86b6")
-  );
-
-  embeds[0].setTitle(sortKey).setURL(url);
-
-  const mainProperties = getMainProperties(wordData);
-  if (mainProperties) embeds[0].setDescription(mainProperties);
-
-  const sources = wordData.listBibl?.bibl
-    .map((b) => b.$.corresp.slice(1))
-    .join(", ");
-
-  if (sources) embeds.at(-1)!.setFooter({ text: `Avoti: ${sources}` });
-
-  return embeds;
-}
 
 export default tezaurs;
