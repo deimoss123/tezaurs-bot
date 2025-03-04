@@ -53,7 +53,7 @@ docker-compose down
 
 ### 2.2 Atvērto datu ievade
 
-Ārpus tēzaura bota mapes noklonē (Tēzaura XML parseri)[https://github.com/deimoss123/tezaurs-xml-parser].
+Ārpus tēzaura bota mapes noklonē [Tēzaura XML parseri](https://github.com/deimoss123/tezaurs-xml-parser).
 ```sh
 git clone https://github.com/deimoss123/tezaurs-xml-parser
 cs tezaurs-xml-parser
