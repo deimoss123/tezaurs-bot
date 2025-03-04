@@ -4,9 +4,16 @@ Visi dati pieder [Tēzauram](https://tezaurs.lv/).
 
 Projekts izmanto tēzaura [atvērtos datus](https://repository.clarin.lv/repository/xmlui/handle/20.500.12574/92).
 
-# Kā palaist botu?
+Lai pievienotu botu savam serverim, spied [šeit](https://discord.com/api/oauth2/authorize?client_id=987805550014238720&permissions=0&scope=bot%20applications.commands).
 
-Pirms sāc, pārliecinies, ka tev ir ieinstalēts [Bun](https://bun.sh/), bez tā nekas nestrādās.
+# Kā palaist botu lokāli?
+
+Tev būs nepieciešams:
+- [Docker](https://www.docker.com).
+- [Go](https://go.dev/).
+
+Ja vēlies veikt izstrādi, būs nepieciešams:
+- [Bun](https://bun.sh/).
 
 ## 1. Izveido jaunu discord botu
 
@@ -18,7 +25,14 @@ Pirms sāc, pārliecinies, ka tev ir ieinstalēts [Bun](https://bun.sh/), bez t�
   - No Scopes izvēlies "applications.commands" un "bot"
   - Atver linku kas ir parādīts apakšā un pievieno botu savam serverim
 
-## 2. Izveido PostgreSQL datubāzi
+## 2. Noklonē Tēzaura bota repozitoriju lokāli
+
+```sh
+git clone https://github.com/deimoss123/tezaurs-bot
+cd tezaurs-bot
+```
+
+### 2.1 Izveido PostgreSQL datubāzi
 
 - Šo var izdarīt vai nu lokāli, vai arī mākonī
 - Iegūsti DB savienošanās URL, **kas būs nepieciešams vēlāk**
@@ -32,78 +46,57 @@ docker-compose up -d postgres
 
 Pēc noklusējuma datubāzes url būs `postgres://tezaursbot@127.0.0.1:5432/tezaurs`
 
-## 3. Koda daļa
-
-### 3.1 Noklonē Github repo
-
+Datubāzi jebkurā brīdī var apstādināt ar komandu
 ```sh
-git clone https://github.com/deimoss123/tezaurs-bot
-cd tezaurs-bot
+docker-compose down
 ```
 
-### 3.2 Atzippo `tezaurs_2023_4_tei.zip` failu
+### 2.2 Atvērto datu ievade
 
-**Linux, macOS**
-
+Ārpus tēzaura bota mapes noklonē (Tēzaura XML parseri)[https://github.com/deimoss123/tezaurs-xml-parser].
 ```sh
-unzip tezaurs_2023_4_tei.zip
+git clone https://github.com/deimoss123/tezaurs-xml-parser
+cs tezaurs-xml-parser
 ```
 
-**Windows (PowerShell)**
-
+Pārliecinies, ka datubāze ir ieslēgta. <br>
+Datu faila nosaukums var atšķirties no zemāk esošā, tāpēc izmanto to, kas norādīta Tēzaura XML parsera README.
 ```sh
-Expand-Archive ./tezaurs_2023_4_tei.zip ./
+go run main.go -f tezaurs_2025_1_tei.xml -pg postgres://tezaursbot@127.0.0.1:5432/tezaurs -table
 ```
 
-Ja izmanto citu atzippošanas veidu, tad `tezaurs_2023_4_tei.xml` failam pēc atzippošanas ir jāatrodas projekta saknē, nevis iekšā citā mapē
+## 3. Bota palaišana
 
-### 3.3 `.env` fails
+❗ Nākamās komandas notiek iepriekš izveidotajā (noklonētajā) tēzaura bota mapē.
 
-Projekta **saknē** izveido failu ar nosaukumu `.env`, izmantojot [.env.example](./.env.example) kā piemēru.
+### 3.1 `.env` fails
 
-### 3.4 Ieinstalēt projekta nepieciešamās paciņas
+- Izveido jaunu failu ar nosaukumu `.env`, izmantojot [.env.example](./.env.example) kā piemēru.
+- Ievadi bota tokenu (iegūts 1. punktā)
+- Ja datubāzes URL nav mainīts, tad atstāj noklusējuma.
+- Ievadi testēšanas Discord servera ID.
 
-```sh
-bun install
-npm rebuild
-```
-
-`npm rebuild` ir jālaiž, jo bun nespēj pareizi ieinstalēt to nolādēto XML paciņu
-
-### 3.5 Izveidot datubāzes tabulu
-
-Palaid sekojošo komandu lai xml failu ierakstītu jaunā PostgreSQL tabulā. (jālaiž ar npm, viss pārējais ar bun)
+### 3.2 Palaid botu un datubāzi
 
 ```sh
-npm run create-table
+docker compose up -d --remove-orphans
 ```
 
-Šis var aizņemt pāris minūtes, kopā ir 397k ieraksti.
+Botam tagad vajadzētu parādīties tiešsaistē Discordā.
 
-### 3.6 Reģistrē Discord bota komandas
+### 3.3 Komandu reģistrēšana
 
-Reģistrēt tikai 1 serverī (TEST_GUILD_ID):
+Komandas var reģistrēt vai nu vienā serverī, vai globāli.
 
+Lai reģistrētu komandas tikai testēšanas serverī:
 ```sh
-bun register
+docker compose run -it bot bun register
 ```
 
-Reģistrēt komandas globāli:
-
+Lai reģistrētu komandas **globāli**:
 ```sh
-bun register-global
+docker compose run -it bot bun register-global
 ```
 
-### 3.7 Pēdējais solis: palaist botu
-
-Palaist botu produkcijas režīmā:
-
-```sh
-bun start
-```
-
-Palaist botu "dev" režīmā (restartēsies pēc failu izmaiņām):
-
-```sh
-bun dev
-```
+Ja komandas nav redzamas, restartē Discord (ctrl + r). <br>
+Ja tās neparādās arī pēc restarta, tad iespējams tā ir Discord servera atļauju problēma.

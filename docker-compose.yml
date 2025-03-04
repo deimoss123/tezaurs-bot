@@ -1,24 +1,20 @@
-version: '3'
-
 services:
   bot:
     container_name: tezaurs-bot
-    restart: always
+    restart: unless-stopped 
     build: .
-    command: bun run start
+    command: bun start
     volumes:
       - .:/usr/app/
       - /usr/app/node_modules
       - /usr/app/dist
     depends_on:
       - postgres
-    environment:
-      DB_URL: postgres://tezaursbot@postgres/tezaurs
     env_file:
       - .env
   postgres:
     container_name: tezaurs-postgres
-    restart: always
+    restart: unless-stopped  
     image: postgres:15-alpine
     environment:
       POSTGRES_HOST_AUTH_METHOD: 'trust'
